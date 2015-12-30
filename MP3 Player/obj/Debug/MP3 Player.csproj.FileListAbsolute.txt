@@ -1,0 +1,12 @@
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\bin\Debug\MP3 Player.exe.config
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\obj\Debug\MP3 Player.csprojResolveAssemblyReference.cache
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\obj\Debug\MP3_Player.Form1.resources
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\obj\Debug\MP3_Player.Properties.Resources.resources
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\obj\Debug\MP3 Player.csproj.GenerateResource.Cache
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\bin\Debug\MP3 Player.exe
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\bin\Debug\MP3 Player.pdb
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\obj\Debug\MP3 Player.exe
+C:\Users\XenoAron\Desktop\XenoAron\Programing\[Programing] - C Programing\개인 제작\[Project]\MP3 Player\MP3 Player\obj\Debug\MP3 Player.pdb
+C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\bin\Debug\MP3 Player.exe.config
+C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3 Player.exe
+C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3 Player.pdb
