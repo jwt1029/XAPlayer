@@ -45,11 +45,11 @@
             this.button1 = new System.Windows.Forms.Button();
             this.musicList = new System.Windows.Forms.ComboBox();
             this.showmorelistBt = new System.Windows.Forms.Button();
-            this.musiclistView = new System.Windows.Forms.ListView();
+            this.buttonList = new System.Windows.Forms.ImageList(this.components);
+            this.musiclistView = new MP3_Player.HiddenListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.buttonList = new System.Windows.Forms.ImageList(this.components);
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nextBt)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.stopBt)).BeginInit();
@@ -218,38 +218,6 @@
             this.showmorelistBt.Text = "▼";
             this.showmorelistBt.UseVisualStyleBackColor = true;
             // 
-            // musiclistView
-            // 
-            this.musiclistView.AllowDrop = true;
-            this.musiclistView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3});
-            this.musiclistView.Location = new System.Drawing.Point(277, 38);
-            this.musiclistView.Name = "musiclistView";
-            this.musiclistView.Scrollable = false;
-            this.musiclistView.Size = new System.Drawing.Size(251, 103);
-            this.musiclistView.TabIndex = 11;
-            this.musiclistView.UseCompatibleStateImageBehavior = false;
-            this.musiclistView.View = System.Windows.Forms.View.Details;
-            this.musiclistView.DragDrop += new System.Windows.Forms.DragEventHandler(this.musiclistView_DragDrop);
-            this.musiclistView.DragEnter += new System.Windows.Forms.DragEventHandler(this.musiclistView_DragEnter);
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "no";
-            this.columnHeader1.Width = 32;
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "title";
-            this.columnHeader2.Width = 166;
-            // 
-            // columnHeader3
-            // 
-            this.columnHeader3.Text = "time";
-            this.columnHeader3.Width = 51;
-            // 
             // buttonList
             // 
             this.buttonList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("buttonList.ImageStream")));
@@ -264,6 +232,41 @@
             this.buttonList.Images.SetKeyName(7, "stopOn.png");
             this.buttonList.Images.SetKeyName(8, "nextOff.png");
             this.buttonList.Images.SetKeyName(9, "nextOn.png");
+            // 
+            // musiclistView
+            // 
+            this.musiclistView.AllowDrop = true;
+            this.musiclistView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2,
+            this.columnHeader3});
+            this.musiclistView.FullRowSelect = true;
+            this.musiclistView.Location = new System.Drawing.Point(277, 38);
+            this.musiclistView.Name = "musiclistView";
+            this.musiclistView.Size = new System.Drawing.Size(251, 103);
+            this.musiclistView.TabIndex = 11;
+            this.musiclistView.UseCompatibleStateImageBehavior = false;
+            this.musiclistView.View = System.Windows.Forms.View.Details;
+            this.musiclistView.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.musiclistView_ColumnWidthChanging);
+            this.musiclistView.DragDrop += new System.Windows.Forms.DragEventHandler(this.musiclistView_DragDrop);
+            this.musiclistView.DragEnter += new System.Windows.Forms.DragEventHandler(this.musiclistView_DragEnter);
+            this.musiclistView.MouseLeave += new System.EventHandler(this.musiclistView_MouseLeave);
+            this.musiclistView.MouseHover += new System.EventHandler(this.musiclistView_MouseHover);
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "no";
+            this.columnHeader1.Width = 32;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "title";
+            this.columnHeader2.Width = 166;
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "time";
+            this.columnHeader3.Width = 49;
             // 
             // Form1
             // 
@@ -308,11 +311,11 @@
         private System.Windows.Forms.Label artistText;
         private System.Windows.Forms.ComboBox musicList;
         private System.Windows.Forms.Button showmorelistBt;
-        private System.Windows.Forms.ListView musiclistView;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.ImageList buttonList;
+        private HiddenListView musiclistView;
 
 
 
