@@ -46,10 +46,19 @@
             this.musicList = new System.Windows.Forms.ComboBox();
             this.showmorelistBt = new System.Windows.Forms.Button();
             this.buttonList = new System.Windows.Forms.ImageList(this.components);
+            this.button2 = new System.Windows.Forms.Button();
+            this.label1 = new System.Windows.Forms.Label();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.playingTime = new System.Windows.Forms.Label();
+            this.RunningTime = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.removeBt = new System.Windows.Forms.Button();
+            this.addBt = new System.Windows.Forms.Button();
             this.musiclistView = new MP3_Player.HiddenListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.button3 = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nextBt)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.stopBt)).BeginInit();
@@ -58,6 +67,7 @@
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AlbumImage)).BeginInit();
             this.groupBox4.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // titleText
@@ -84,7 +94,7 @@
             this.groupBox1.Controls.Add(this.stopBt);
             this.groupBox1.Controls.Add(this.playBt);
             this.groupBox1.Controls.Add(this.prevBt);
-            this.groupBox1.Location = new System.Drawing.Point(63, 104);
+            this.groupBox1.Location = new System.Drawing.Point(74, 98);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(108, 40);
             this.groupBox1.TabIndex = 3;
@@ -122,6 +132,7 @@
             this.playBt.Click += new System.EventHandler(this.playBt_Click);
             this.playBt.MouseLeave += new System.EventHandler(this.Button_MouseLeave);
             this.playBt.MouseHover += new System.EventHandler(this.Button_MouseHover);
+            this.playBt.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.playBt_PreviewKeyDown);
             // 
             // prevBt
             // 
@@ -136,8 +147,10 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.BackColor = System.Drawing.SystemColors.Window;
             this.groupBox2.Controls.Add(this.AlbumImage);
             this.groupBox2.Controls.Add(this.groupBox1);
+            this.groupBox2.Controls.Add(this.button3);
             this.groupBox2.Controls.Add(this.titleText);
             this.groupBox2.Controls.Add(this.artistText);
             this.groupBox2.Controls.Add(this.timeText);
@@ -180,7 +193,7 @@
             // 
             this.groupBox4.Controls.Add(this.button1);
             this.groupBox4.Controls.Add(this.label2);
-            this.groupBox4.Location = new System.Drawing.Point(12, 162);
+            this.groupBox4.Location = new System.Drawing.Point(12, 189);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(516, 101);
             this.groupBox4.TabIndex = 6;
@@ -199,14 +212,14 @@
             // 
             // musicList
             // 
+            this.musicList.BackColor = System.Drawing.SystemColors.WindowFrame;
             this.musicList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.musicList.FormattingEnabled = true;
-            this.musicList.Items.AddRange(new object[] {
-            "최근 들은 음악"});
             this.musicList.Location = new System.Drawing.Point(277, 12);
             this.musicList.Name = "musicList";
             this.musicList.Size = new System.Drawing.Size(251, 20);
             this.musicList.TabIndex = 8;
+            this.musicList.SelectedIndexChanged += new System.EventHandler(this.musicList_SelectedIndexChanged);
             // 
             // showmorelistBt
             // 
@@ -233,14 +246,96 @@
             this.buttonList.Images.SetKeyName(8, "nextOff.png");
             this.buttonList.Images.SetKeyName(9, "nextOn.png");
             // 
+            // button2
+            // 
+            this.button2.Location = new System.Drawing.Point(240, 30);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(10, 10);
+            this.button2.TabIndex = 5;
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.button2_MouseDown);
+            this.button2.MouseUp += new System.Windows.Forms.MouseEventHandler(this.button2_MouseUp);
+            // 
+            // label1
+            // 
+            this.label1.Location = new System.Drawing.Point(158, 30);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(100, 11);
+            this.label1.TabIndex = 4;
+            this.label1.Text = "───────";
+            // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.playingTime);
+            this.groupBox3.Controls.Add(this.RunningTime);
+            this.groupBox3.Controls.Add(this.label3);
+            this.groupBox3.Controls.Add(this.button2);
+            this.groupBox3.Controls.Add(this.label1);
+            this.groupBox3.Location = new System.Drawing.Point(9, 142);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(262, 43);
+            this.groupBox3.TabIndex = 12;
+            this.groupBox3.TabStop = false;
+            // 
+            // playingTime
+            // 
+            this.playingTime.AutoSize = true;
+            this.playingTime.Location = new System.Drawing.Point(191, 16);
+            this.playingTime.Name = "playingTime";
+            this.playingTime.Size = new System.Drawing.Size(67, 12);
+            this.playingTime.TabIndex = 8;
+            this.playingTime.Text = "00:00/00:00";
+            // 
+            // RunningTime
+            // 
+            this.RunningTime.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.RunningTime.Location = new System.Drawing.Point(4, 15);
+            this.RunningTime.Name = "RunningTime";
+            this.RunningTime.Size = new System.Drawing.Size(187, 10);
+            this.RunningTime.TabIndex = 6;
+            this.RunningTime.Text = "─────────────────────";
+            this.RunningTime.MouseClick += new System.Windows.Forms.MouseEventHandler(this.playingPositionChanged);
+            // 
+            // label3
+            // 
+            this.label3.Location = new System.Drawing.Point(4, 15);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(187, 10);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "─────────────────────";
+            this.label3.MouseClick += new System.Windows.Forms.MouseEventHandler(this.playingPositionChanged);
+            // 
+            // removeBt
+            // 
+            this.removeBt.Font = new System.Drawing.Font("Gulim", 8F);
+            this.removeBt.Location = new System.Drawing.Point(469, 138);
+            this.removeBt.Name = "removeBt";
+            this.removeBt.Size = new System.Drawing.Size(31, 17);
+            this.removeBt.TabIndex = 10;
+            this.removeBt.Text = "-";
+            this.removeBt.UseVisualStyleBackColor = true;
+            this.removeBt.Click += new System.EventHandler(this.removeBt_Click);
+            // 
+            // addBt
+            // 
+            this.addBt.Font = new System.Drawing.Font("Gulim", 8F);
+            this.addBt.Location = new System.Drawing.Point(440, 138);
+            this.addBt.Name = "addBt";
+            this.addBt.Size = new System.Drawing.Size(31, 17);
+            this.addBt.TabIndex = 10;
+            this.addBt.Text = "+";
+            this.addBt.UseVisualStyleBackColor = true;
+            // 
             // musiclistView
             // 
             this.musiclistView.AllowDrop = true;
+            this.musiclistView.BackColor = System.Drawing.SystemColors.Window;
             this.musiclistView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeader1,
             this.columnHeader2,
             this.columnHeader3});
             this.musiclistView.FullRowSelect = true;
+            this.musiclistView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
             this.musiclistView.Location = new System.Drawing.Point(277, 38);
             this.musiclistView.Name = "musiclistView";
             this.musiclistView.Size = new System.Drawing.Size(251, 103);
@@ -250,8 +345,10 @@
             this.musiclistView.ColumnWidthChanging += new System.Windows.Forms.ColumnWidthChangingEventHandler(this.musiclistView_ColumnWidthChanging);
             this.musiclistView.DragDrop += new System.Windows.Forms.DragEventHandler(this.musiclistView_DragDrop);
             this.musiclistView.DragEnter += new System.Windows.Forms.DragEventHandler(this.musiclistView_DragEnter);
+            this.musiclistView.DoubleClick += new System.EventHandler(this.musiclistView_DoubleClick);
             this.musiclistView.MouseLeave += new System.EventHandler(this.musiclistView_MouseLeave);
             this.musiclistView.MouseHover += new System.EventHandler(this.musiclistView_MouseHover);
+            this.musiclistView.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.musiclistView_PreviewKeyDown);
             // 
             // columnHeader1
             // 
@@ -268,19 +365,35 @@
             this.columnHeader3.Text = "time";
             this.columnHeader3.Width = 49;
             // 
+            // button3
+            // 
+            this.button3.Font = new System.Drawing.Font("Gulim", 8F);
+            this.button3.Location = new System.Drawing.Point(231, 121);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(31, 17);
+            this.button3.TabIndex = 10;
+            this.button3.Text = "Rand";
+            this.button3.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(540, 271);
+            this.BackColor = System.Drawing.SystemColors.Window;
+            this.ClientSize = new System.Drawing.Size(540, 296);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.musiclistView);
+            this.Controls.Add(this.addBt);
+            this.Controls.Add(this.removeBt);
             this.Controls.Add(this.showmorelistBt);
             this.Controls.Add(this.musicList);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox2);
+            this.DoubleBuffered = true;
             this.MaximizeBox = false;
             this.Name = "Form1";
             this.Text = "Form1";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.nextBt)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.stopBt)).EndInit();
@@ -290,6 +403,8 @@
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.AlbumImage)).EndInit();
             this.groupBox4.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
+            this.groupBox3.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -316,6 +431,15 @@
         private System.Windows.Forms.ColumnHeader columnHeader3;
         private System.Windows.Forms.ImageList buttonList;
         private HiddenListView musiclistView;
+        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Label playingTime;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label RunningTime;
+        private System.Windows.Forms.Button removeBt;
+        private System.Windows.Forms.Button addBt;
+        private System.Windows.Forms.Button button3;
 
 
 
