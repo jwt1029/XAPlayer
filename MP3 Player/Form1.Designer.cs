@@ -39,6 +39,8 @@
             this.prevBt = new System.Windows.Forms.PictureBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.AlbumImage = new System.Windows.Forms.PictureBox();
+            this.timerBt = new System.Windows.Forms.Button();
+            this.randomBt = new System.Windows.Forms.Button();
             this.artistText = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
@@ -49,16 +51,18 @@
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.RunningTime = new System.Windows.Forms.PictureBox();
             this.playingTime = new System.Windows.Forms.Label();
-            this.RunningTime = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.removeBt = new System.Windows.Forms.Button();
             this.addBt = new System.Windows.Forms.Button();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.timeShowLb = new System.Windows.Forms.Label();
             this.musiclistView = new MP3_Player.HiddenListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.button3 = new System.Windows.Forms.Button();
+            this.exportBt = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nextBt)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.stopBt)).BeginInit();
@@ -68,6 +72,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.AlbumImage)).BeginInit();
             this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RunningTime)).BeginInit();
             this.SuspendLayout();
             // 
             // titleText
@@ -150,7 +155,8 @@
             this.groupBox2.BackColor = System.Drawing.SystemColors.Window;
             this.groupBox2.Controls.Add(this.AlbumImage);
             this.groupBox2.Controls.Add(this.groupBox1);
-            this.groupBox2.Controls.Add(this.button3);
+            this.groupBox2.Controls.Add(this.timerBt);
+            this.groupBox2.Controls.Add(this.randomBt);
             this.groupBox2.Controls.Add(this.titleText);
             this.groupBox2.Controls.Add(this.artistText);
             this.groupBox2.Controls.Add(this.timeText);
@@ -168,6 +174,27 @@
             this.AlbumImage.Size = new System.Drawing.Size(80, 80);
             this.AlbumImage.TabIndex = 0;
             this.AlbumImage.TabStop = false;
+            // 
+            // timerBt
+            // 
+            this.timerBt.Font = new System.Drawing.Font("Gulim", 8F);
+            this.timerBt.Image = global::MP3_Player.Properties.Resources.timer;
+            this.timerBt.Location = new System.Drawing.Point(201, 118);
+            this.timerBt.Name = "timerBt";
+            this.timerBt.Size = new System.Drawing.Size(31, 20);
+            this.timerBt.TabIndex = 10;
+            this.timerBt.UseVisualStyleBackColor = true;
+            this.timerBt.Click += new System.EventHandler(this.timerBt_Click);
+            // 
+            // randomBt
+            // 
+            this.randomBt.Font = new System.Drawing.Font("Gulim", 8F);
+            this.randomBt.Location = new System.Drawing.Point(231, 118);
+            this.randomBt.Name = "randomBt";
+            this.randomBt.Size = new System.Drawing.Size(31, 20);
+            this.randomBt.TabIndex = 10;
+            this.randomBt.UseVisualStyleBackColor = true;
+            this.randomBt.Click += new System.EventHandler(this.randomBt_Click);
             // 
             // artistText
             // 
@@ -266,8 +293,8 @@
             // 
             // groupBox3
             // 
-            this.groupBox3.Controls.Add(this.playingTime);
             this.groupBox3.Controls.Add(this.RunningTime);
+            this.groupBox3.Controls.Add(this.playingTime);
             this.groupBox3.Controls.Add(this.label3);
             this.groupBox3.Controls.Add(this.button2);
             this.groupBox3.Controls.Add(this.label1);
@@ -276,6 +303,16 @@
             this.groupBox3.Size = new System.Drawing.Size(262, 43);
             this.groupBox3.TabIndex = 12;
             this.groupBox3.TabStop = false;
+            // 
+            // RunningTime
+            // 
+            this.RunningTime.BackColor = System.Drawing.SystemColors.HotTrack;
+            this.RunningTime.Location = new System.Drawing.Point(4, 21);
+            this.RunningTime.Margin = new System.Windows.Forms.Padding(0);
+            this.RunningTime.Name = "RunningTime";
+            this.RunningTime.Size = new System.Drawing.Size(182, 1);
+            this.RunningTime.TabIndex = 14;
+            this.RunningTime.TabStop = false;
             // 
             // playingTime
             // 
@@ -286,19 +323,9 @@
             this.playingTime.TabIndex = 8;
             this.playingTime.Text = "00:00/00:00";
             // 
-            // RunningTime
-            // 
-            this.RunningTime.ForeColor = System.Drawing.SystemColors.HotTrack;
-            this.RunningTime.Location = new System.Drawing.Point(4, 15);
-            this.RunningTime.Name = "RunningTime";
-            this.RunningTime.Size = new System.Drawing.Size(187, 10);
-            this.RunningTime.TabIndex = 6;
-            this.RunningTime.Text = "─────────────────────";
-            this.RunningTime.MouseClick += new System.Windows.Forms.MouseEventHandler(this.playingPositionChanged);
-            // 
             // label3
             // 
-            this.label3.Location = new System.Drawing.Point(4, 15);
+            this.label3.Location = new System.Drawing.Point(3, 16);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(187, 10);
             this.label3.TabIndex = 6;
@@ -325,6 +352,19 @@
             this.addBt.TabIndex = 10;
             this.addBt.Text = "+";
             this.addBt.UseVisualStyleBackColor = true;
+            this.addBt.Click += new System.EventHandler(this.addBt_Click);
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // timeShowLb
+            // 
+            this.timeShowLb.AutoSize = true;
+            this.timeShowLb.Location = new System.Drawing.Point(277, 174);
+            this.timeShowLb.Name = "timeShowLb";
+            this.timeShowLb.Size = new System.Drawing.Size(0, 12);
+            this.timeShowLb.TabIndex = 13;
             // 
             // musiclistView
             // 
@@ -365,15 +405,15 @@
             this.columnHeader3.Text = "time";
             this.columnHeader3.Width = 49;
             // 
-            // button3
+            // exportBt
             // 
-            this.button3.Font = new System.Drawing.Font("Gulim", 8F);
-            this.button3.Location = new System.Drawing.Point(231, 121);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(31, 17);
-            this.button3.TabIndex = 10;
-            this.button3.Text = "Rand";
-            this.button3.UseVisualStyleBackColor = true;
+            this.exportBt.Font = new System.Drawing.Font("Gulim", 8F);
+            this.exportBt.Location = new System.Drawing.Point(411, 138);
+            this.exportBt.Name = "exportBt";
+            this.exportBt.Size = new System.Drawing.Size(31, 17);
+            this.exportBt.TabIndex = 10;
+            this.exportBt.UseVisualStyleBackColor = true;
+            this.exportBt.Click += new System.EventHandler(this.exportBt_Click);
             // 
             // Form1
             // 
@@ -381,8 +421,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
             this.ClientSize = new System.Drawing.Size(540, 296);
+            this.Controls.Add(this.timeShowLb);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.musiclistView);
+            this.Controls.Add(this.exportBt);
             this.Controls.Add(this.addBt);
             this.Controls.Add(this.removeBt);
             this.Controls.Add(this.showmorelistBt);
@@ -394,6 +436,7 @@
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Shown += new System.EventHandler(this.Form1_Shown);
             this.groupBox1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.nextBt)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.stopBt)).EndInit();
@@ -405,7 +448,9 @@
             this.groupBox4.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RunningTime)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -436,10 +481,14 @@
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.Label playingTime;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.Label RunningTime;
         private System.Windows.Forms.Button removeBt;
         private System.Windows.Forms.Button addBt;
-        private System.Windows.Forms.Button button3;
+        private System.Windows.Forms.Button randomBt;
+        private System.Windows.Forms.Button timerBt;
+        private System.Windows.Forms.PictureBox RunningTime;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Label timeShowLb;
+        private System.Windows.Forms.Button exportBt;
 
 
 

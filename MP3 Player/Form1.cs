@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mlib;
+using System.Threading;
 
 namespace MP3_Player
 {
@@ -32,6 +33,8 @@ namespace MP3_Player
         private List<MusicList> listFromFile;
         private int m;
         private int s;
+        private bool random = false;
+        private int reserve = -1;
 
         #region Form1()
         /// <summary>
@@ -46,14 +49,66 @@ namespace MP3_Player
             playBt.Image = buttonList.Images[2];
             stopBt.Image = buttonList.Images[6];
             nextBt.Image = buttonList.Images[8];
+
+            randomBt.Image = Properties.Resources.go;
+
             listFromFile = MusicListFile.readFile("savedList.xnp");
             setList();
             musicList.SelectedIndex = 0;
 
             irrKlangEngine = new IrrKlang.ISoundEngine();
+            playBt.Select();
+
             //0 2 6 8
             //ListViewItem Item = new ListViewItem(new string[] { "1", "nameA", "00:00" });
             //musiclistView.Items.Add(Item);
+        }
+
+        private void checkInfo()
+        {
+            MFile m = new MFile("savedInfo.xni", System.IO.FileMode.Open, System.IO.FileAccess.Read);
+            List<string> readData = new List<string>();
+            string listName = null;
+            string musicName = null;
+            float volume = 1;
+            uint time = 0;
+            try
+            {
+                time = uint.Parse(m.ReadLine());
+                volume = float.Parse(m.ReadLine());
+                listName = m.ReadLine();
+                musicName = m.ReadLine();
+                m.Close();
+            }
+            catch
+            {
+                m.Close();
+            }
+
+            if (listName != null)
+            {
+                musicList.SelectedItem = listName;
+                if (musicName != null)
+                {
+                    foreach(Fmanage f in fileList)
+                        if (f.info.Name == musicName)
+                        {
+                            this.volume = 0;
+                            int pos = (int)(volume * 100.0f * 84 / 100) + 155;
+                            button2.Location = new Point(pos, button2.Location.Y);
+                            playingNum = f.no - 1;
+
+                            playMusic(f.info.FullName);
+                            currentlyPlayingSound.PlayPosition = time;
+                            for (int i = 0; i <= volume * 100; i++)
+                            {
+                                irrKlangEngine.SoundVolume = (float)i / 100;
+                                Thread.Sleep(50);
+                            }
+                            break;
+                        }
+                }
+            }
         }
 
         private void setList()
@@ -172,21 +227,27 @@ namespace MP3_Player
             TagLib.File f = TagLib.File.Create(path);
              m = f.Properties.Duration.Minutes;
              s = f.Properties.Duration.Seconds;
-            titleText.Text = f.Tag.Title;
+             if (f.Tag.Title == null)
+                 titleText.Text = (new FileInfo(path)).Name;
+             else
+                 titleText.Text = f.Tag.Title;
             if (f.Tag.Pictures.Length != 0)
                 AlbumImage.Image = ByteToImage(f.Tag.Pictures[0].Data.Data);
             else
                 AlbumImage.Image = Properties.Resources.Disk;
-            
-            artistText.Text = f.Tag.FirstArtist;
+            if (f.Tag.FirstAlbumArtist == null)
+                artistText.Text = "Unknown";
+            else
+                artistText.Text = f.Tag.FirstArtist;
             timeText.Text = m + ":" + s;
 
+            irrKlangEngine.SoundVolume = 0;
             currentlyPlayingSound = irrKlangEngine.Play2D(path);
             Thread thread = new Thread(new ThreadStart(progressBar));
             thread.Start();
             Thread checkEnd = new Thread(new ThreadStart(checkMusicEnd));
             checkEnd.Start();
-            currentlyPlayingSound.Volume = volume;
+            irrKlangEngine.SoundVolume = volume;
         }
 
         private void progressBar()
@@ -197,7 +258,7 @@ namespace MP3_Player
             {
                 try
                 {
-                    setLabelSize(RunningTime, new Size((int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * 187), 10));
+                    setLabelSize(RunningTime, new Size((int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * 187), 1));
                     int now = (int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * (m*60+s));
                     playingTime.Text = now/60 + ":" + now%60 + "/" + m + ":" + s;
                     //RunningTime.Size = new Size((int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * 187), 10);
@@ -210,13 +271,13 @@ namespace MP3_Player
             }
         }
 
-        delegate void safeSetLabelSize(Label label, Size size);
-        private void setLabelSize(Label label, Size size)
+        delegate void safeSetLabelSize(PictureBox picture, Size size);
+        private void setLabelSize(PictureBox picture, Size size)
         {
-            if (label.InvokeRequired)
-                label.Invoke(new safeSetLabelSize(setLabelSize), label, size);
+            if (picture.InvokeRequired)
+                picture.Invoke(new safeSetLabelSize(setLabelSize), picture, size);
             else
-                label.Size = size;
+                picture.Size = size;
         }
 
         public Bitmap ByteToImage(byte[] blob)
@@ -363,9 +424,26 @@ namespace MP3_Player
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            saveInfo();
             if(currentlyPlayingSound != null)
                 currentlyPlayingSound.Paused = true;
             alive = false;
+        }
+
+        private void saveInfo()
+        {
+            uint playTime = currentlyPlayingSound.PlayPosition;
+            float playVolume = irrKlangEngine.SoundVolume;
+            string playList = musicList.Text;
+            string playMusic = fileList[playingNum].info.Name;
+
+            List<string> datas = new List<string>();
+            datas.Add(playTime.ToString());
+            datas.Add(playVolume.ToString());
+            datas.Add(playList);
+            datas.Add(playMusic);
+
+            File.WriteAllText("savedInfo.xni", String.Join("\r\n",datas), Encoding.UTF8);
         }
 
         private void musiclistView_DoubleClick(object sender, EventArgs e)
@@ -394,7 +472,7 @@ namespace MP3_Player
                     volume = (pos - 155) * 100 / 84 / 100.0f;
                     if (currentlyPlayingSound != null)
                     {
-                        currentlyPlayingSound.Volume = volume;
+                        irrKlangEngine.SoundVolume = volume;
                     }
                     //this.Opacity = (double)(pos - 224) / 100;
                 }
@@ -469,6 +547,111 @@ namespace MP3_Player
                     datas.Add("\t" + str);
             }
             File.WriteAllText("savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
+        }
+
+        private void randomBt_Click(object sender, EventArgs e)
+        {
+            if (random)
+            {
+                random = false;
+                randomBt.Image = Properties.Resources.go;
+            }
+            else
+            {
+                random = true;
+                randomBt.Image = Properties.Resources.cross;
+            }
+        }
+
+        private void addBt_Click(object sender, EventArgs e)
+        {
+            openFileDialog1.Filter = "All music files (*.mp3;*.ogg;*.wav;*.mod;*.it;*.xm;*.it;*.s3d)|*.mp3;*.ogg;*.wav;*.mod;*.it;*.xm;*.it;*.s3d";
+            openFileDialog1.FilterIndex = 0;
+            if (openFileDialog1.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+            {
+                string str = openFileDialog1.FileName;
+                TagLib.File f = TagLib.File.Create(str);
+                int m = f.Properties.Duration.Minutes;
+                int s = f.Properties.Duration.Seconds;
+                fileList.Add(new Fmanage(new FileInfo(str), fileList.Count + 1, m, s));
+
+                int idx = fileList.Count - 1;
+                ListViewItem Item = new ListViewItem(new string[] { fileList[idx].no.ToString(), fileList[idx].info.Name, m + ":" + s });
+                musiclistView.Items.Add(Item);
+                foreach (MusicList music in listFromFile)
+                {
+                    if (music.name == musicList.Text)
+                        music.list.Add(str);
+                }
+
+                List<string> datas = new List<string>();
+                foreach (MusicList music in listFromFile)
+                {
+                    datas.Add("<" + music.name + ">");
+                    foreach (string file in music.list)
+                        datas.Add("\t" + file);
+                }
+                File.WriteAllText("savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
+            }
+        }
+
+        List<int> timeList = new List<int>();
+        private void timerBt_Click(object sender, EventArgs e)
+        {
+            Timer time = new Timer();
+            if (time.ShowDialog() == DialogResult.OK)
+            {
+                reserve = time.min;
+                if (reserve == -1)
+                {
+                    timeList.Clear();
+                    timeShowLb.Text = "";
+                }
+                else
+                {
+                    Thread Limit = new Thread(new ParameterizedThreadStart(timeLimit));
+                    timeList.Add(timeList.Count);
+                    Limit.Start(timeList.Count - 1);
+                }
+            }
+        }
+
+        private void timeLimit(object obj)
+        {
+            int num = (int)obj;
+            while (alive)
+            {
+                for (int i = 0; i < reserve; i++)
+                {
+                    timeShowLb.Text = reserve - i + "분 뒤 종료 됩니다";
+                    for (int j = 0; j < 60; j++)
+                    {
+                        Thread.Sleep(1000);
+                        if (timeList.Count == 0 || num != timeList[timeList.Count - 1])
+                        {
+                            timeList.Remove(num);
+                            return;
+                        }
+                    }
+                }
+                this.Close();
+            }
+        }
+
+        private void exportBt_Click(object sender, EventArgs e)
+        {
+            /*List<string> mlist = new List<string>();
+            foreach (ListViewItem item in musiclistView.Items) {
+                mlist.Add(item.SubItems[1].Text);
+            }*/
+            Export export = new Export(fileList);
+            export.ShowDialog();
+        }
+
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            Thread loadInfo = new Thread(new ThreadStart(checkInfo));
+            loadInfo.Start();
         }
     }
 }

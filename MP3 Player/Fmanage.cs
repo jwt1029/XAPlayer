@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MP3_Player
 {
-    class Fmanage
+    public class Fmanage
     {
         public FileInfo info;
         public int no;
