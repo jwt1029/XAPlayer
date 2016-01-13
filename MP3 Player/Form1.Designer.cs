@@ -42,9 +42,9 @@
             this.timerBt = new System.Windows.Forms.Button();
             this.randomBt = new System.Windows.Forms.Button();
             this.artistText = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lyricsText = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
+            this.captionBt = new System.Windows.Forms.Button();
             this.musicList = new System.Windows.Forms.ComboBox();
             this.showmorelistBt = new System.Windows.Forms.Button();
             this.buttonList = new System.Windows.Forms.ImageList(this.components);
@@ -58,11 +58,11 @@
             this.addBt = new System.Windows.Forms.Button();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.timeShowLb = new System.Windows.Forms.Label();
+            this.exportBt = new System.Windows.Forms.Button();
             this.musiclistView = new MP3_Player.HiddenListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.exportBt = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.nextBt)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.stopBt)).BeginInit();
@@ -205,42 +205,43 @@
             this.artistText.TabIndex = 1;
             this.artistText.Text = "artist";
             // 
-            // label2
+            // lyricsText
             // 
-            this.label2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.label2.Font = new System.Drawing.Font("Gulim", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.label2.Location = new System.Drawing.Point(3, 17);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(510, 81);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "가사 입니다\r\n입니다 가사\r\n다니입 사가";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lyricsText.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.lyricsText.Font = new System.Drawing.Font("Gulim", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.lyricsText.Location = new System.Drawing.Point(3, 17);
+            this.lyricsText.Name = "lyricsText";
+            this.lyricsText.Size = new System.Drawing.Size(510, 47);
+            this.lyricsText.TabIndex = 1;
+            this.lyricsText.Text = "가사 입니다\r\n입니다 가사\r\n다니입 사가";
+            this.lyricsText.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.button1);
-            this.groupBox4.Controls.Add(this.label2);
+            this.groupBox4.Controls.Add(this.lyricsText);
             this.groupBox4.Location = new System.Drawing.Point(12, 189);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(516, 101);
+            this.groupBox4.Size = new System.Drawing.Size(516, 67);
             this.groupBox4.TabIndex = 6;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "가사";
             // 
-            // button1
+            // captionBt
             // 
-            this.button1.Font = new System.Drawing.Font("NanumGothic", 7.5F);
-            this.button1.Location = new System.Drawing.Point(462, 80);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(52, 19);
-            this.button1.TabIndex = 2;
-            this.button1.Text = "가사 찾기";
-            this.button1.UseVisualStyleBackColor = true;
+            this.captionBt.Font = new System.Drawing.Font("NanumGothic", 7.5F);
+            this.captionBt.Location = new System.Drawing.Point(476, 255);
+            this.captionBt.Name = "captionBt";
+            this.captionBt.Size = new System.Drawing.Size(52, 19);
+            this.captionBt.TabIndex = 2;
+            this.captionBt.Text = "가사 찾기";
+            this.captionBt.UseVisualStyleBackColor = true;
+            this.captionBt.Visible = false;
             // 
             // musicList
             // 
             this.musicList.BackColor = System.Drawing.SystemColors.WindowFrame;
             this.musicList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.musicList.ForeColor = System.Drawing.SystemColors.Window;
             this.musicList.FormattingEnabled = true;
             this.musicList.Location = new System.Drawing.Point(277, 12);
             this.musicList.Name = "musicList";
@@ -322,6 +323,7 @@
             this.playingTime.Size = new System.Drawing.Size(67, 12);
             this.playingTime.TabIndex = 8;
             this.playingTime.Text = "00:00/00:00";
+            this.playingTime.Click += new System.EventHandler(this.playingTime_Click);
             // 
             // label3
             // 
@@ -366,6 +368,17 @@
             this.timeShowLb.Size = new System.Drawing.Size(0, 12);
             this.timeShowLb.TabIndex = 13;
             // 
+            // exportBt
+            // 
+            this.exportBt.Font = new System.Drawing.Font("Gulim", 8F);
+            this.exportBt.Image = global::MP3_Player.Properties.Resources.folder_5121;
+            this.exportBt.Location = new System.Drawing.Point(411, 138);
+            this.exportBt.Name = "exportBt";
+            this.exportBt.Size = new System.Drawing.Size(31, 17);
+            this.exportBt.TabIndex = 10;
+            this.exportBt.UseVisualStyleBackColor = true;
+            this.exportBt.Click += new System.EventHandler(this.exportBt_Click);
+            // 
             // musiclistView
             // 
             this.musiclistView.AllowDrop = true;
@@ -405,22 +418,13 @@
             this.columnHeader3.Text = "time";
             this.columnHeader3.Width = 49;
             // 
-            // exportBt
-            // 
-            this.exportBt.Font = new System.Drawing.Font("Gulim", 8F);
-            this.exportBt.Location = new System.Drawing.Point(411, 138);
-            this.exportBt.Name = "exportBt";
-            this.exportBt.Size = new System.Drawing.Size(31, 17);
-            this.exportBt.TabIndex = 10;
-            this.exportBt.UseVisualStyleBackColor = true;
-            this.exportBt.Click += new System.EventHandler(this.exportBt_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Window;
-            this.ClientSize = new System.Drawing.Size(540, 296);
+            this.ClientSize = new System.Drawing.Size(540, 284);
+            this.Controls.Add(this.captionBt);
             this.Controls.Add(this.timeShowLb);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.musiclistView);
@@ -465,9 +469,9 @@
         private System.Windows.Forms.PictureBox stopBt;
         private System.Windows.Forms.PictureBox playBt;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label lyricsText;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button captionBt;
         private System.Windows.Forms.Label artistText;
         private System.Windows.Forms.ComboBox musicList;
         private System.Windows.Forms.Button showmorelistBt;

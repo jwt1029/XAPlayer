@@ -158,6 +158,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\cross.png" />
+    <None Include="Resources\folder-512.png" />
     <Content Include="Resources\go.png" />
     <None Include="Resources\timer-512-000001.png" />
   </ItemGroup>

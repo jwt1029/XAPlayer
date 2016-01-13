@@ -47,6 +47,7 @@
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(431, 148);
             this.listBox1.TabIndex = 0;
+            this.listBox1.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Export_PreviewKeyDown);
             // 
             // label1
             // 
@@ -66,6 +67,7 @@
             this.pathText.Name = "pathText";
             this.pathText.Size = new System.Drawing.Size(279, 21);
             this.pathText.TabIndex = 2;
+            this.pathText.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Export_PreviewKeyDown);
             // 
             // openBt
             // 
@@ -76,6 +78,7 @@
             this.openBt.Text = "...";
             this.openBt.UseVisualStyleBackColor = true;
             this.openBt.Click += new System.EventHandler(this.openBt_Click);
+            this.openBt.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Export_PreviewKeyDown);
             // 
             // saveBt
             // 
@@ -88,6 +91,7 @@
             this.saveBt.Text = "save";
             this.saveBt.UseVisualStyleBackColor = true;
             this.saveBt.Click += new System.EventHandler(this.saveBt_Click);
+            this.saveBt.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Export_PreviewKeyDown);
             // 
             // label2
             // 
@@ -134,6 +138,7 @@
             this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Export_MouseDown);
             this.MouseMove += new System.Windows.Forms.MouseEventHandler(this.Export_MouseMove);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.Export_MouseUp);
+            this.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.Export_PreviewKeyDown);
             this.ResumeLayout(false);
             this.PerformLayout();
 

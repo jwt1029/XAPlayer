@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Mlib;
 using System.Threading;
+using System.Net;
 
 namespace MP3_Player
 {
@@ -35,7 +36,15 @@ namespace MP3_Player
         private int s;
         private bool random = false;
         private int reserve = -1;
-
+        public struct uintstr {
+            public uint time;
+            public string lyrics;
+            public uintstr(uint i, string s)
+            {
+                time = i;
+                lyrics = s;
+            }
+        }
         #region Form1()
         /// <summary>
         /// Form1 created & started
@@ -57,6 +66,7 @@ namespace MP3_Player
             musicList.SelectedIndex = 0;
 
             irrKlangEngine = new IrrKlang.ISoundEngine();
+            irrKlangEngine.SoundVolume = 0;
             playBt.Select();
 
             //0 2 6 8
@@ -107,8 +117,15 @@ namespace MP3_Player
                             }
                             break;
                         }
+                    this.volume = volume;
                 }
             }
+        }
+
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            Thread loadInfo = new Thread(new ThreadStart(checkInfo));
+            loadInfo.Start();
         }
 
         private void setList()
@@ -117,6 +134,16 @@ namespace MP3_Player
             {
                 musicList.Items.Add(list.name);
             }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            saveInfo();
+            progressList.Clear();
+            timeList.Clear();
+            if (currentlyPlayingSound != null)
+                currentlyPlayingSound.Paused = true;
+            alive = false;
         }
 
         /*
@@ -182,6 +209,7 @@ namespace MP3_Player
         }
         #endregion
 
+        #region Play music
         private void playBt_Click(object sender, EventArgs e)
         {
             if (musiclistView.Items.Count == 0)
@@ -216,6 +244,12 @@ namespace MP3_Player
 
         private void playMusic(string path)
         {
+
+            musiclistView.Items[musiclistView.SelectedIndices[0]].Selected = false;
+            musiclistView.Items[playingNum].Selected = true;
+            musiclistView.Items[playingNum].Focused = true;
+            musiclistView.Items[playingNum].EnsureVisible();
+
             if (currentlyPlayingSound != null)
             {
                 running = false;
@@ -241,21 +275,138 @@ namespace MP3_Player
                 artistText.Text = f.Tag.FirstArtist;
             timeText.Text = m + ":" + s;
 
-            irrKlangEngine.SoundVolume = 0;
             currentlyPlayingSound = irrKlangEngine.Play2D(path);
-            Thread thread = new Thread(new ThreadStart(progressBar));
-            thread.Start();
+            
+            Thread thread = new Thread(new ParameterizedThreadStart(progressBar));
+            timeList.Add(timeList.Count);
+            thread.Start(timeList.Count - 1);
+
             Thread checkEnd = new Thread(new ThreadStart(checkMusicEnd));
             checkEnd.Start();
+
+            Thread lyrics = new Thread(new ParameterizedThreadStart(loadLyrics));
+            lyrics.Start(new object[] {timeList.Count - 1,path});
+
             irrKlangEngine.SoundVolume = volume;
+            playBt.Image = buttonList.Images[4];
+        }
+        #region Lyrics
+        private void loadLyrics(object obj)
+        {
+            int num = (int)((object[])obj)[0];
+            string path = (string)((object[])obj)[1];
+            string responseFromServer;
+            HttpWebRequest Hwr2 = (HttpWebRequest)WebRequest.Create("http://lyrics.alsong.co.kr/alsongwebservice/service1.asmx");
+            Hwr2.Method = "POST";
+            Hwr2.ContentType = "application/soap+xml";
+            Hwr2.Referer = "http://cloud.naver.com/";
+            Hwr2.UserAgent = "gSOAP/2.7";
+
+            System.IO.Stream str = Hwr2.GetRequestStream();
+            System.IO.StreamWriter stwr = new System.IO.StreamWriter(str, Encoding.Default);
+
+            FileStream fs = new FileStream(path,FileMode.Open);
+            byte[] barray = new byte[163840]; //= File.ReadAllBytes("D:\\My\\TT\\04 - Please Freeze.flac");
+            fs.Read(barray, 0, 163840);
+            fs.Close();
+            byte[] mdarray = System.Security.Cryptography.MD5.Create().ComputeHash(barray);
+            StringBuilder sb = new StringBuilder();
+            foreach(byte b in mdarray)
+                sb.Append(b.ToString("x2"));
+            string md5 = sb.ToString();
+
+            string sendData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns2=\"ALSongWebServer/Service1Soap\" xmlns:ns1=\"ALSongWebServer\" xmlns:ns3=\"ALSongWebServer/Service1Soap12\"><SOAP-ENV:Body><ns1:GetLyric5><ns1:stQuery><ns1:strChecksum>" + md5 + "</ns1:strChecksum><ns1:strVersion>2.0 beta2</ns1:strVersion><ns1:strMACAddress>ffffffffffff</ns1:strMACAddress><ns1:strIPAddress>255.255.255.0</ns1:strIPAddress></ns1:stQuery></ns1:GetLyric5></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+            stwr.Write(sendData);
+
+            stwr.Flush(); stwr.Close(); stwr.Dispose();
+            str.Flush(); str.Close(); str.Dispose();
+
+
+            HttpWebResponse response = (HttpWebResponse)Hwr2.GetResponse();
+
+            Stream dataStream = response.GetResponseStream();
+            StreamReader reader = new StreamReader(dataStream, Encoding.UTF8);
+
+            responseFromServer = reader.ReadToEnd();
+            parseLyrics(num, responseFromServer);
         }
 
-        private void progressBar()
+        private void parseLyrics(int num, string responseFromServer)
         {
+            List<uintstr> datas = new List<uintstr>();
+            try
+            {
+                datas.Add(new uintstr(0, responseFromServer.Substring(responseFromServer.IndexOf("<strTitle>") + "<strTitle>".Length, responseFromServer.IndexOf("</strTitle>") - (responseFromServer.IndexOf("<strTitle>") + "<strTitle>".Length))));
+                datas.Add(new uintstr(0, responseFromServer.Substring(responseFromServer.IndexOf("<strArtist>") + "<strArtist>".Length, responseFromServer.IndexOf("</strArtist>") - (responseFromServer.IndexOf("<strArtist>") + "<strArtist>".Length))));
+                datas.Add(new uintstr(0, responseFromServer.Substring(responseFromServer.IndexOf("<strAlbum>") + "<strAlbum>".Length, responseFromServer.IndexOf("</strAlbum>") - (responseFromServer.IndexOf("<strAlbum>") + "<strAlbum>".Length))));
+            }
+            catch
+            {
+                lyricsText.Text = "검색 된 가사가 없습니다.\r\n";
+                lyricsText.Text += titleText.Text;
+                return;
+            }
+            string data = responseFromServer.Substring(responseFromServer.IndexOf("<strLyric>") + "<strLyric>".Length, responseFromServer.IndexOf("</strLyric>") - (responseFromServer.IndexOf("<strLyric>") + "<strLyric>".Length));  //.Replace("&lt;br&gt;")
+            List<string> splitData = System.Text.RegularExpressions.Regex.Split(data, "&lt;br&gt;").ToList();
+            splitData.Remove("");
+            foreach (string str in splitData)
+            {
+                uint v = uint.Parse(str.Substring(1, 2)) * 60000;
+                v += uint.Parse(str.Substring(4, 2)) * 1000 + uint.Parse(str.Substring(7, 2)) * 10;
+
+                datas.Add(new uintstr( v, str.Substring(10)));
+            }
+            Thread thread = new Thread(new ParameterizedThreadStart(showLyrics));
+            thread.Start(new object[] {num, datas});
+        }
+
+        private void showLyrics(object obj)
+        {
+            int index = 0;
+            int num = (int)((object[])obj)[0];
+            List<uintstr> datas = (List<uintstr>)((object[])obj)[1];
+            while (alive)
+            {
+                if (timeList.Count == 0 || num != timeList[timeList.Count - 1])
+                {
+                    timeList.Remove(num);
+                    lyricsText.Text = "가사 탐색 중...";
+                    return;
+                }
+                try
+                {
+                    if (datas[index].time < currentlyPlayingSound.PlayPosition)
+                    {
+                        lyricsText.Text = "";
+                        uint nowTime = datas[index].time;
+                        while (datas[index].time == nowTime)
+                        {
+                            lyricsText.Text += datas[index].lyrics + "\r\n";
+                            index++;
+                        }
+                    }
+                }
+                catch
+                {
+                    lyricsText.Text = "가사 탐색 중...";
+                    return;
+                }
+            }
+        }
+        #endregion
+        List<int> progressList = new List<int>();
+        private void progressBar(object obj)
+        {
+            int num = (int)obj;
             uint totalLength = currentlyPlayingSound.PlayLength;
             int totalTime = m * 60 + s;
             while (alive && running)
             {
+                if (timeList.Count == 0 || num != timeList[timeList.Count - 1])
+                {
+                    timeList.Remove(num);
+                    return;
+                }
                 try
                 {
                     setLabelSize(RunningTime, new Size((int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * 187), 1));
@@ -334,6 +485,7 @@ namespace MP3_Player
                 playingNum = 0;
             playMusic(fileList[playingNum].info.FullName);
         }
+        #endregion
 
         private void stopBt_Click(object sender, EventArgs e)
         {
@@ -422,14 +574,6 @@ namespace MP3_Player
         }
         #endregion
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            saveInfo();
-            if(currentlyPlayingSound != null)
-                currentlyPlayingSound.Paused = true;
-            alive = false;
-        }
-
         private void saveInfo()
         {
             uint playTime = currentlyPlayingSound.PlayPosition;
@@ -453,6 +597,7 @@ namespace MP3_Player
         }
 
         bool run = false;
+        #region Volume control
         private void button2_MouseDown(object sender, MouseEventArgs e)
         {
             Thread move = new Thread(new ThreadStart(moveButton));
@@ -483,6 +628,7 @@ namespace MP3_Player
         {
             run = false;
         }
+        #endregion
 
         private void playingPositionChanged(object sender, MouseEventArgs e)
         {
@@ -531,6 +677,54 @@ namespace MP3_Player
                 playBt_Click(null, null);
         }
 
+        #region Timer
+        List<int> timeList = new List<int>();
+        private void timerBt_Click(object sender, EventArgs e)
+        {
+            Timer time = new Timer();
+            if (time.ShowDialog() == DialogResult.OK)
+            {
+                reserve = time.min;
+                if (reserve == -1)
+                {
+                    timeList.Clear();
+                    timeShowLb.Text = "";
+                }
+                else
+                {
+                    Thread Limit = new Thread(new ParameterizedThreadStart(timeLimit));
+                    timeList.Add(timeList.Count);
+                    Limit.Start(timeList.Count - 1);
+                }
+            }
+        }
+
+        private void timeLimit(object obj)
+        {
+            int num = (int)obj;
+            while (alive)
+            {
+                for (int i = 0; i < reserve; i++)
+                {
+                    timeShowLb.Text = reserve - i + "분 뒤 종료 됩니다";
+                    for (int j = 0; j < 60; j++)
+                    {
+                        Thread.Sleep(1000);
+                        if (timeList.Count == 0 || num != timeList[timeList.Count - 1])
+                        {
+                            timeList.Remove(num);
+                            return;
+                        }
+                        if (!alive)
+                            return;
+                    }
+                }
+                this.Close();
+            }
+        }
+        #endregion
+
+        #region Music list contorl buttons
         private void removeBt_Click(object sender, EventArgs e)
         {
             List<string> datas = new List<string>();
@@ -595,49 +789,6 @@ namespace MP3_Player
             }
         }
 
-        List<int> timeList = new List<int>();
-        private void timerBt_Click(object sender, EventArgs e)
-        {
-            Timer time = new Timer();
-            if (time.ShowDialog() == DialogResult.OK)
-            {
-                reserve = time.min;
-                if (reserve == -1)
-                {
-                    timeList.Clear();
-                    timeShowLb.Text = "";
-                }
-                else
-                {
-                    Thread Limit = new Thread(new ParameterizedThreadStart(timeLimit));
-                    timeList.Add(timeList.Count);
-                    Limit.Start(timeList.Count - 1);
-                }
-            }
-        }
-
-        private void timeLimit(object obj)
-        {
-            int num = (int)obj;
-            while (alive)
-            {
-                for (int i = 0; i < reserve; i++)
-                {
-                    timeShowLb.Text = reserve - i + "분 뒤 종료 됩니다";
-                    for (int j = 0; j < 60; j++)
-                    {
-                        Thread.Sleep(1000);
-                        if (timeList.Count == 0 || num != timeList[timeList.Count - 1])
-                        {
-                            timeList.Remove(num);
-                            return;
-                        }
-                    }
-                }
-                this.Close();
-            }
-        }
-
         private void exportBt_Click(object sender, EventArgs e)
         {
             /*List<string> mlist = new List<string>();
@@ -647,11 +798,79 @@ namespace MP3_Player
             Export export = new Export(fileList);
             export.ShowDialog();
         }
+        #endregion
 
-        private void Form1_Shown(object sender, EventArgs e)
+        #region Theme control
+        int themeCall = 0;
+        bool theme = false;
+        private void playingTime_Click(object sender, EventArgs e)
         {
-            Thread loadInfo = new Thread(new ThreadStart(checkInfo));
-            loadInfo.Start();
+            if(themeCall++ >= 5)
+            {
+                theme = !theme;
+                if(theme)
+                {
+                    this.BackColor = Color.FromArgb(64,64,64);
+                    groupBox1.BackColor = Color.FromArgb(64, 64, 64);
+                    groupBox2.BackColor = Color.FromArgb(64, 64, 64);
+                    groupBox3.BackColor = Color.FromArgb(64, 64, 64);
+                    groupBox4.BackColor = Color.FromArgb(64, 64, 64);
+                    musiclistView.BackColor = Color.FromArgb(64, 64, 64);
+
+                    exportBt.BackColor = Color.FromArgb(64, 64, 64);
+                    exportBt.FlatStyle = FlatStyle.Flat;
+
+                    addBt.BackColor = Color.FromArgb(64, 64, 64);
+                    addBt.FlatStyle = FlatStyle.Flat;
+                     
+                    removeBt.BackColor = Color.FromArgb(64, 64, 64);
+                    removeBt.FlatStyle = FlatStyle.Flat;
+
+                    showmorelistBt.BackColor = Color.FromArgb(64, 64, 64);
+                    showmorelistBt.FlatStyle = FlatStyle.Flat;
+
+                    timerBt.BackColor = Color.FromArgb(64, 64, 64);
+                    timerBt.FlatStyle = FlatStyle.Flat;
+
+                    randomBt.BackColor = Color.FromArgb(64, 64, 64);
+                    randomBt.FlatStyle = FlatStyle.Flat;
+
+                    captionBt.BackColor = Color.FromArgb(64, 64, 64);
+                    captionBt.FlatStyle = FlatStyle.Flat;
+                }
+                else
+                {
+                    this.BackColor = SystemColors.Window;
+                    groupBox1.BackColor = SystemColors.Window;
+                    groupBox2.BackColor = SystemColors.Window;
+                    groupBox3.BackColor = SystemColors.Window;
+                    groupBox4.BackColor = SystemColors.Window;
+                    musiclistView.BackColor = SystemColors.Window;
+
+                    exportBt.BackColor = SystemColors.Window;
+                    exportBt.FlatStyle = FlatStyle.Standard;
+
+                    addBt.BackColor = SystemColors.Window;
+                    addBt.FlatStyle = FlatStyle.Standard;
+
+                    removeBt.BackColor = SystemColors.Window;
+                    removeBt.FlatStyle = FlatStyle.Standard;
+
+                    showmorelistBt.BackColor = SystemColors.Window;
+                    showmorelistBt.FlatStyle = FlatStyle.Standard;
+
+                    timerBt.BackColor = SystemColors.Window;
+                    timerBt.FlatStyle = FlatStyle.Standard;
+
+                    randomBt.BackColor = SystemColors.Window;
+                    randomBt.FlatStyle = FlatStyle.Standard;
+
+                    captionBt.BackColor = SystemColors.Window;
+                    captionBt.FlatStyle = FlatStyle.Standard;
+                }
+                themeCall = 0;
+            }
         }
+        #endregion
     }
 }

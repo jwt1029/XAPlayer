@@ -116,5 +116,11 @@ namespace MP3_Player
                 this.Location = Point.Add(dragFormPoint, new Size(dif));
             }
         }
+
+        private void Export_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+                this.Close();
+        }
     }
 }
