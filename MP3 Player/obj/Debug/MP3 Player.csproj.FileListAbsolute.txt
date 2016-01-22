@@ -17,7 +17,7 @@ C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3_Player.Form
 C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3_Player.Properties.Resources.resources
 C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3 Player.csproj.GenerateResource.Cache
 C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\bin\Debug\taglib-sharp.dll
-C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\bin\Debug\irrKlang.NET4.dll
 C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\bin\Debug\Mlib.dll
 C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3_Player.Timer.resources
 C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\obj\Debug\MP3_Player.Export.resources
+C:\Users\XenoAron\Documents\GitHub\XAPlayer\MP3 Player\bin\Debug\irrKlang.NET4.dll

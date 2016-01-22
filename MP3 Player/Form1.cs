@@ -13,10 +13,11 @@ using System.Windows.Forms;
 using Mlib;
 using System.Threading;
 using System.Net;
+using IrrKlang;
 
 namespace MP3_Player
 {
-    public partial class Form1 : Form
+     public partial class Form1 : Form
     {
         protected IrrKlang.ISoundEngine irrKlangEngine;
         protected IrrKlang.ISound currentlyPlayingSound;
@@ -36,7 +37,8 @@ namespace MP3_Player
         private int s;
         private bool random = false;
         private int reserve = -1;
-        public struct uintstr {
+        public struct uintstr
+        {
             public uint time;
             public string lyrics;
             public uintstr(uint i, string s)
@@ -76,7 +78,7 @@ namespace MP3_Player
 
         private void checkInfo()
         {
-            MFile m = new MFile("savedInfo.xni", System.IO.FileMode.Open, System.IO.FileAccess.Read);
+            MFile m = new MFile(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\XAPlayer\\savedInfo.xni", System.IO.FileMode.Open, System.IO.FileAccess.Read);
             List<string> readData = new List<string>();
             string listName = null;
             string musicName = null;
@@ -100,7 +102,7 @@ namespace MP3_Player
                 musicList.SelectedItem = listName;
                 if (musicName != null)
                 {
-                    foreach(Fmanage f in fileList)
+                    foreach (Fmanage f in fileList)
                         if (f.info.Name == musicName)
                         {
                             this.volume = 0;
@@ -122,10 +124,40 @@ namespace MP3_Player
             }
         }
 
+        #region WINFORM DLLIMPORT
+
+        [DllImport("user32.dll")]
+        static extern IntPtr CreateWindowEx(int dwExStyle, string lpClassName, string lpWindowName, uint dwStyle, int x, int y, int nWidth, int nHeight, IntPtr hWndParent, IntPtr hMenu, IntPtr hInstance, IntPtr lpParam);
+
+        [DllImport("user32.dll")]
+        static extern bool SetLayeredWindowAttributes(IntPtr hwnd, uint crKey, byte bAlpha, uint dwFlags);
+
+        [DllImport("user32.dll")]
+        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        const int WS_EX_LAYERED = 0x00080000;
+        const int WS_VISIBLE = 0x10000000;
+        const int WS_BORDER = 0x00800000;
+        const uint WS_POPUP = 0x80000000;
+
+        const int WS_EX_TRANSPARENT = 0x00000020;
+        const int LWA_ALPHA = 0x2;
+        const string DesktopWindow = "#32769";
+
+        #endregion
+
         private void Form1_Shown(object sender, EventArgs e)
         {
+            createNewForm();
             Thread loadInfo = new Thread(new ThreadStart(checkInfo));
             loadInfo.Start();
+        }
+
+        private void createNewForm()
+        {
+            IntPtr h = CreateWindowEx(WS_EX_LAYERED | WS_EX_TRANSPARENT, DesktopWindow, "MyWindow", WS_POPUP, 800, 450, 500, 120, this.Handle, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+            SetLayeredWindowAttributes(h, 0, 128, LWA_ALPHA);
+            ShowWindow(h, 0);
         }
 
         private void setList()
@@ -259,12 +291,12 @@ namespace MP3_Player
             running = true;
 
             TagLib.File f = TagLib.File.Create(path);
-             m = f.Properties.Duration.Minutes;
-             s = f.Properties.Duration.Seconds;
-             if (f.Tag.Title == null)
-                 titleText.Text = (new FileInfo(path)).Name;
-             else
-                 titleText.Text = f.Tag.Title;
+            m = f.Properties.Duration.Minutes;
+            s = f.Properties.Duration.Seconds;
+            if (f.Tag.Title == null)
+                titleText.Text = (new FileInfo(path)).Name;
+            else
+                titleText.Text = f.Tag.Title;
             if (f.Tag.Pictures.Length != 0)
                 AlbumImage.Image = ByteToImage(f.Tag.Pictures[0].Data.Data);
             else
@@ -276,7 +308,7 @@ namespace MP3_Player
             timeText.Text = m + ":" + s;
 
             currentlyPlayingSound = irrKlangEngine.Play2D(path);
-            
+
             Thread thread = new Thread(new ParameterizedThreadStart(progressBar));
             timeList.Add(timeList.Count);
             thread.Start(timeList.Count - 1);
@@ -285,7 +317,7 @@ namespace MP3_Player
             checkEnd.Start();
 
             Thread lyrics = new Thread(new ParameterizedThreadStart(loadLyrics));
-            lyrics.Start(new object[] {timeList.Count - 1,path});
+            lyrics.Start(new object[] { timeList.Count - 1, path });
 
             irrKlangEngine.SoundVolume = volume;
             playBt.Image = buttonList.Images[4];
@@ -293,42 +325,49 @@ namespace MP3_Player
         #region Lyrics
         private void loadLyrics(object obj)
         {
+            lyricsText.Text = "가사 탐색 중...";
             int num = (int)((object[])obj)[0];
             string path = (string)((object[])obj)[1];
             string responseFromServer;
             HttpWebRequest Hwr2 = (HttpWebRequest)WebRequest.Create("http://lyrics.alsong.co.kr/alsongwebservice/service1.asmx");
             Hwr2.Method = "POST";
             Hwr2.ContentType = "application/soap+xml";
-            Hwr2.Referer = "http://cloud.naver.com/";
+            //Hwr2.Referer = "http://cloud.naver.com/";
             Hwr2.UserAgent = "gSOAP/2.7";
 
-            System.IO.Stream str = Hwr2.GetRequestStream();
-            System.IO.StreamWriter stwr = new System.IO.StreamWriter(str, Encoding.Default);
+            try
+            {
+                System.IO.Stream str = Hwr2.GetRequestStream();
+                System.IO.StreamWriter stwr = new System.IO.StreamWriter(str, Encoding.Default);
 
-            FileStream fs = new FileStream(path,FileMode.Open);
-            byte[] barray = new byte[163840]; //= File.ReadAllBytes("D:\\My\\TT\\04 - Please Freeze.flac");
-            fs.Read(barray, 0, 163840);
-            fs.Close();
-            byte[] mdarray = System.Security.Cryptography.MD5.Create().ComputeHash(barray);
-            StringBuilder sb = new StringBuilder();
-            foreach(byte b in mdarray)
-                sb.Append(b.ToString("x2"));
-            string md5 = sb.ToString();
+                FileStream fs = new FileStream(path, FileMode.Open);
+                byte[] barray = new byte[163840]; //= File.ReadAllBytes("D:\\My\\TT\\04 - Please Freeze.flac");
+                fs.Read(barray, 0, 163840);
+                fs.Close();
+                byte[] mdarray = System.Security.Cryptography.MD5.Create().ComputeHash(barray);
+                StringBuilder sb = new StringBuilder();
+                foreach (byte b in mdarray)
+                    sb.Append(b.ToString("x2"));
+                string md5 = sb.ToString();
 
-            string sendData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns2=\"ALSongWebServer/Service1Soap\" xmlns:ns1=\"ALSongWebServer\" xmlns:ns3=\"ALSongWebServer/Service1Soap12\"><SOAP-ENV:Body><ns1:GetLyric5><ns1:stQuery><ns1:strChecksum>" + md5 + "</ns1:strChecksum><ns1:strVersion>2.0 beta2</ns1:strVersion><ns1:strMACAddress>ffffffffffff</ns1:strMACAddress><ns1:strIPAddress>255.255.255.0</ns1:strIPAddress></ns1:stQuery></ns1:GetLyric5></SOAP-ENV:Body></SOAP-ENV:Envelope>";
-            stwr.Write(sendData);
+                string sendData = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:SOAP-ENC=\"http://www.w3.org/2003/05/soap-encoding\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:ns2=\"ALSongWebServer/Service1Soap\" xmlns:ns1=\"ALSongWebServer\" xmlns:ns3=\"ALSongWebServer/Service1Soap12\"><SOAP-ENV:Body><ns1:GetLyric5><ns1:stQuery><ns1:strChecksum>" + md5 + "</ns1:strChecksum><ns1:strVersion>2.0 beta2</ns1:strVersion><ns1:strMACAddress>ffffffffffff</ns1:strMACAddress><ns1:strIPAddress>255.255.255.0</ns1:strIPAddress></ns1:stQuery></ns1:GetLyric5></SOAP-ENV:Body></SOAP-ENV:Envelope>";
+                stwr.Write(sendData);
 
-            stwr.Flush(); stwr.Close(); stwr.Dispose();
-            str.Flush(); str.Close(); str.Dispose();
+                stwr.Flush(); stwr.Close(); stwr.Dispose();
+                str.Flush(); str.Close(); str.Dispose();
 
+                HttpWebResponse response = (HttpWebResponse)Hwr2.GetResponse();
 
-            HttpWebResponse response = (HttpWebResponse)Hwr2.GetResponse();
+                Stream dataStream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(dataStream, Encoding.UTF8);
 
-            Stream dataStream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(dataStream, Encoding.UTF8);
-
-            responseFromServer = reader.ReadToEnd();
-            parseLyrics(num, responseFromServer);
+                responseFromServer = reader.ReadToEnd();
+                parseLyrics(num, responseFromServer);
+            }
+            catch
+            {
+                lyricsText.Text = "네트워크에 연결되어 있지 않습니다";
+            }
         }
 
         private void parseLyrics(int num, string responseFromServer)
@@ -353,11 +392,11 @@ namespace MP3_Player
             {
                 uint v = uint.Parse(str.Substring(1, 2)) * 60000;
                 v += uint.Parse(str.Substring(4, 2)) * 1000 + uint.Parse(str.Substring(7, 2)) * 10;
-
-                datas.Add(new uintstr( v, str.Substring(10)));
+                if(v!=0)
+                    datas.Add(new uintstr(v, str.Substring(10)));
             }
             Thread thread = new Thread(new ParameterizedThreadStart(showLyrics));
-            thread.Start(new object[] {num, datas});
+            thread.Start(new object[] { num, datas });
         }
 
         private void showLyrics(object obj)
@@ -370,16 +409,15 @@ namespace MP3_Player
                 if (timeList.Count == 0 || num != timeList[timeList.Count - 1])
                 {
                     timeList.Remove(num);
-                    lyricsText.Text = "가사 탐색 중...";
                     return;
                 }
                 try
                 {
-                    if (datas[index].time < currentlyPlayingSound.PlayPosition)
+                    if (index < datas.Count && datas[index].time < currentlyPlayingSound.PlayPosition)
                     {
                         lyricsText.Text = "";
                         uint nowTime = datas[index].time;
-                        while (datas[index].time == nowTime)
+                        while (index < datas.Count && datas[index].time == nowTime)
                         {
                             lyricsText.Text += datas[index].lyrics + "\r\n";
                             index++;
@@ -391,6 +429,7 @@ namespace MP3_Player
                     lyricsText.Text = "가사 탐색 중...";
                     return;
                 }
+
             }
         }
         #endregion
@@ -410,8 +449,8 @@ namespace MP3_Player
                 try
                 {
                     setLabelSize(RunningTime, new Size((int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * 187), 1));
-                    int now = (int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * (m*60+s));
-                    playingTime.Text = now/60 + ":" + now%60 + "/" + m + ":" + s;
+                    int now = (int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * (m * 60 + s));
+                    playingTime.Text = now / 60 + ":" + now % 60 + "/" + m + ":" + s;
                     //RunningTime.Size = new Size((int)((double)currentlyPlayingSound.PlayPosition / (double)totalLength * 187), 10);
                     Thread.Sleep(10);
                 }
@@ -489,7 +528,7 @@ namespace MP3_Player
 
         private void stopBt_Click(object sender, EventArgs e)
         {
-            if (currentlyPlayingSound!= null && !currentlyPlayingSound.Paused)
+            if (currentlyPlayingSound != null && !currentlyPlayingSound.Paused)
             {
                 running = false;
                 currentlyPlayingSound.Stop();
@@ -541,9 +580,9 @@ namespace MP3_Player
                 int idx = fileList.Count - 1;
                 ListViewItem Item = new ListViewItem(new string[] { fileList[idx].no.ToString(), fileList[idx].info.Name, m + ":" + s });
                 musiclistView.Items.Add(Item);
-                foreach(MusicList music in listFromFile)
+                foreach (MusicList music in listFromFile)
                 {
-                    if(music.name == musicList.Text)
+                    if (music.name == musicList.Text)
                         music.list.Add(str);
                 }
             }
@@ -551,10 +590,10 @@ namespace MP3_Player
             foreach (MusicList music in listFromFile)
             {
                 datas.Add("<" + music.name + ">");
-                foreach(string str in music.list)
+                foreach (string str in music.list)
                     datas.Add("\t" + str);
             }
-            File.WriteAllText("savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
+            File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\XAPlayer\\savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
         }
 
         private void musiclistView_ColumnWidthChanging(object sender, ColumnWidthChangingEventArgs e)
@@ -586,14 +625,14 @@ namespace MP3_Player
             datas.Add(playVolume.ToString());
             datas.Add(playList);
             datas.Add(playMusic);
-
-            File.WriteAllText("savedInfo.xni", String.Join("\r\n",datas), Encoding.UTF8);
+            
+            File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\XAPlayer\\savedInfo.xni", String.Join("\r\n", datas), Encoding.UTF8);
         }
 
         private void musiclistView_DoubleClick(object sender, EventArgs e)
         {
             stopBt_Click(new object(), new EventArgs());
-            playBt_Click(new object() , new EventArgs());
+            playBt_Click(new object(), new EventArgs());
         }
 
         bool run = false;
@@ -740,7 +779,7 @@ namespace MP3_Player
                 foreach (string str in music.list)
                     datas.Add("\t" + str);
             }
-            File.WriteAllText("savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
+            File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\XAPlayer\\savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
         }
 
         private void randomBt_Click(object sender, EventArgs e)
@@ -759,7 +798,7 @@ namespace MP3_Player
 
         private void addBt_Click(object sender, EventArgs e)
         {
-            openFileDialog1.Filter = "All music files (*.mp3;*.ogg;*.wav;*.mod;*.it;*.xm;*.it;*.s3d)|*.mp3;*.ogg;*.wav;*.mod;*.it;*.xm;*.it;*.s3d";
+            openFileDialog1.Filter = "All music files (*.mp3;*.ogg;*.wav;*.mod;*.it;*.xm;*.it;*.s3d;*.flac)|*.mp3;*.ogg;*.wav;*.mod;*.it;*.xm;*.it;*.s3d;*.flac";
             openFileDialog1.FilterIndex = 0;
             if (openFileDialog1.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
             {
@@ -768,7 +807,7 @@ namespace MP3_Player
                 int m = f.Properties.Duration.Minutes;
                 int s = f.Properties.Duration.Seconds;
                 fileList.Add(new Fmanage(new FileInfo(str), fileList.Count + 1, m, s));
-
+                    
                 int idx = fileList.Count - 1;
                 ListViewItem Item = new ListViewItem(new string[] { fileList[idx].no.ToString(), fileList[idx].info.Name, m + ":" + s });
                 musiclistView.Items.Add(Item);
@@ -785,7 +824,7 @@ namespace MP3_Player
                     foreach (string file in music.list)
                         datas.Add("\t" + file);
                 }
-                File.WriteAllText("savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
+                File.WriteAllText(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\XAPlayer\\savedList.xnp", String.Join("\r\n", datas.ToArray()), Encoding.UTF8);
             }
         }
 
@@ -805,12 +844,12 @@ namespace MP3_Player
         bool theme = false;
         private void playingTime_Click(object sender, EventArgs e)
         {
-            if(themeCall++ >= 5)
+            if (themeCall++ >= 5)
             {
                 theme = !theme;
-                if(theme)
+                if (theme)
                 {
-                    this.BackColor = Color.FromArgb(64,64,64);
+                    this.BackColor = Color.FromArgb(64, 64, 64);
                     groupBox1.BackColor = Color.FromArgb(64, 64, 64);
                     groupBox2.BackColor = Color.FromArgb(64, 64, 64);
                     groupBox3.BackColor = Color.FromArgb(64, 64, 64);
@@ -822,7 +861,7 @@ namespace MP3_Player
 
                     addBt.BackColor = Color.FromArgb(64, 64, 64);
                     addBt.FlatStyle = FlatStyle.Flat;
-                     
+
                     removeBt.BackColor = Color.FromArgb(64, 64, 64);
                     removeBt.FlatStyle = FlatStyle.Flat;
 
@@ -872,5 +911,12 @@ namespace MP3_Player
             }
         }
         #endregion
+
+        private void showmorelistBt_Click(object sender, EventArgs e)
+        {
+            ISoundEffectControl fx = currentlyPlayingSound.SoundEffectControl;
+            if(fx!=null)
+                fx.EnableEchoSoundEffect();
+        }
     }
 }
